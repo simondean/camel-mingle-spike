@@ -7,6 +7,6 @@ import org.springframework.stereotype.Component;
 public class MingleRoute extends SpringRouteBuilder {
   @Override
   public void configure() throws Exception {
-    from("direct:start").to("mock:result");
+    from("mingle:localhost:443").to("mock:result");
   }
 }

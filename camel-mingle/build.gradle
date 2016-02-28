@@ -1,0 +1,9 @@
+dependencies {
+  compile "org.apache.camel:camel-core:$camelVersion",
+    "org.apache.camel:components:$camelVersion",
+    //"org.apache.camel:camel-spring-javaconfig:$camelVersion",
+    "org.apache.httpcomponents:httpclient:$httpClientVersion"
+  testCompile "junit:junit:$junitVersion",
+    "org.assertj:assertj-core:$jassertVersion",
+    "org.apache.camel:camel-test:$camelVersion"
+}

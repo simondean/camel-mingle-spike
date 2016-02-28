@@ -1,9 +1,15 @@
 apply plugin: 'application'
 
 dependencies {
-  compile 'org.springframework:spring-context:4.2.4.RELEASE',
-    'org.springframework:spring-tx:4.2.4.RELEASE',
-    'org.apache.camel:camel-spring-javaconfig:2.16.2'
+  compile "org.springframework:spring-context:$springFrameworkVersion",
+    "org.springframework:spring-tx:$springFrameworkVersion",
+    "org.apache.camel:camel-core:$camelVersion",
+    "org.apache.camel:components:$camelVersion",
+    "org.apache.camel:camel-spring-javaconfig:$camelVersion",
+    project(':camel-mingle')
+  testCompile "junit:junit:$junitVersion",
+    "org.assertj:assertj-core:$jassertVersion",
+    "org.apache.camel:camel-test:$camelVersion"
 }
 
 mainClassName = "org.simondean.camel.mingleexample.Main"

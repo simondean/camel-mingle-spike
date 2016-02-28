@@ -12,6 +12,14 @@ subprojects {
 
     version = '0.0.1'
 
+    ext {
+        camelVersion = '2.16.2'
+        springFrameworkVersion = '4.2.5.RELEASE'
+        junitVersion = '4.12'
+        jassertVersion = '3.3.0'
+        httpClientVersion = '4.5.2'
+    }
+
     jar {
         manifest.attributes provider: 'gradle'
     }
