@@ -19,6 +19,7 @@ subprojects {
         jassertVersion = '3.3.0'
         httpClientVersion = '4.5.2'
         jdomVersion = '2.0.6'
+        guavaVersion = '19.0'
     }
 
     jar {

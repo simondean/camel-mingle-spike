@@ -2,7 +2,8 @@ apply plugin: 'application'
 
 dependencies {
   compile "org.apache.httpcomponents:httpclient:$httpClientVersion",
-    "org.jdom:jdom2:$jdomVersion"
+    "org.jdom:jdom2:$jdomVersion",
+    "com.google.guava:guava:$guavaVersion"
   testCompile "junit:junit:$junitVersion",
     "org.assertj:assertj-core:$jassertVersion"
 }
