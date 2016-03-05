@@ -1,6 +1,5 @@
 package org.simondean.spikes.mingleelasticsearch;
 
-import com.google.common.collect.Lists;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
 import org.apache.http.auth.AuthScope;
@@ -15,46 +14,36 @@ import org.apache.http.util.EntityUtils;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.JDOMException;
-import org.jdom2.Namespace;
 import org.jdom2.input.SAXBuilder;
 
 import java.io.IOException;
 import java.io.StringReader;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.List;
 import java.util.Optional;
-import java.util.stream.Stream;
 
 public class Importer {
   private static final String utf8Charset = "UTF-8";
 
   public void run(String scheme, String host, int port, String username, String password, String projectName) throws Exception {
     HttpHost httpHost = new HttpHost(host, port, scheme);
+    CloseableHttpClient httpClient = createHttpClient(username, password, httpHost);
+    Optional<URI> pageUri = Optional.of(generateFirstPageUri(projectName));
+    Repository observer = new ElasticsearchRepository();
 
-    CloseableHttpClient httpClient = HttpClients.custom()
-      .setDefaultCredentialsProvider(createCredentialsProvider(httpHost, username, password))
-      .build();
-
-    URI pageUri = generateFirstPageUri(projectName);
-
-    while (pageUri != null) {
+    while (pageUri.isPresent()) {
       System.out.println(pageUri);
-      Document document = parseXml(getAtomFeedXml(httpClient, httpHost, pageUri));
+      Document document = parseXml(getAtomFeedXml(httpClient, httpHost, pageUri.get()));
       Element feed = document.getRootElement();
-      FeedProcessor feedProcessor = new FeedProcessor(feed);
-      Optional<Element> previousLink = feedProcessor.process();
-
-      if (previousLink.isPresent()) {
-        pageUri = new URI(getLinkHref(previousLink));
-      } else {
-        pageUri = null;
-      }
+      AtomFeedProcessor feedProcessor = new AtomFeedProcessor(feed, observer);
+      pageUri = feedProcessor.process();
     }
   }
 
-  private String getLinkHref(Optional<Element> previousLink) {
-    return previousLink.get().getAttributeValue("href");
+  private CloseableHttpClient createHttpClient(String username, String password, HttpHost httpHost) {
+    return HttpClients.custom()
+        .setDefaultCredentialsProvider(createCredentialsProvider(httpHost, username, password))
+        .build();
   }
 
   private Document parseXml(String body) throws JDOMException, IOException {
