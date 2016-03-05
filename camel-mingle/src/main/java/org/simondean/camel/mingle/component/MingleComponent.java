@@ -7,6 +7,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.URI;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 public class MingleComponent extends UriEndpointComponent {
@@ -27,12 +29,12 @@ public class MingleComponent extends UriEndpointComponent {
     int port = remainingUri.getPort();
 
     MingleEndpoint endpoint = new MingleEndpoint(uri, this);
-    endpoint.setHostname(hostname);
+    endpoint.setHost(hostname);
     endpoint.setPort(port);
 
     if (LOG.isDebugEnabled()) {
       LOG.debug("Creating MingleComponent with host {}:{}",
-        new Object[]{endpoint.getHostname(), endpoint.getPort()});
+        new Object[]{endpoint.getHost(), endpoint.getPort()});
     }
 
     return endpoint;

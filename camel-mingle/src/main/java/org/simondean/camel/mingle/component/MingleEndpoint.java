@@ -4,16 +4,66 @@ import org.apache.camel.Consumer;
 import org.apache.camel.Processor;
 import org.apache.camel.Producer;
 import org.apache.camel.impl.DefaultEndpoint;
+import org.apache.camel.spi.UriEndpoint;
+import org.apache.camel.spi.UriParam;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.util.Collections;
+import java.util.List;
+
+@UriEndpoint(scheme = "mingle", title = "Mingle", syntax = "mingle:host:port", consumerClass = MingleConsumer.class, label = "api")
 public class MingleEndpoint extends DefaultEndpoint {
-  private String hostname;
+  private static final Logger LOG = LoggerFactory.getLogger(MingleEndpoint.class);
+
+  @UriParam
+  private String scheme;
+  @UriParam
+  private String host;
+  @UriParam
   private int port;
+  @UriParam
+  private List<String> projects;
+  @UriParam
+  private MingleStateRepository stateRepository;
 
   public MingleEndpoint() {
   }
 
   public MingleEndpoint(String endpointUri, MingleComponent component) {
     super(endpointUri, component);
+  }
+
+  public String getScheme() {
+    return scheme;
+  }
+
+  public void setScheme(String scheme) {
+    this.scheme = scheme;
+  }
+
+  public String getHost() {
+    return host;
+  }
+
+  public void setHost(String host) {
+    this.host = host;
+  }
+
+  public int getPort() {
+    return port;
+  }
+
+  public void setPort(int port) {
+    this.port = port;
+  }
+
+  public List<String> getProjects() {
+    return projects;
+  }
+
+  public void setProjects(List<String> projects) {
+    this.projects = Collections.unmodifiableList(projects);
   }
 
   @Override
@@ -36,7 +86,10 @@ public class MingleEndpoint extends DefaultEndpoint {
   protected void doStart() throws Exception {
     super.doStart();
 
-    // TODO: Do stuff
+    if (stateRepository == null) {
+      stateRepository = new MemoryMingleStateRepository();
+      LOG.info("Defaulting to MemoryMingleFeedPositionRepository");
+    }
   }
 
   @Override
@@ -46,19 +99,11 @@ public class MingleEndpoint extends DefaultEndpoint {
     super.doStop();
   }
 
-  public String getHostname() {
-    return hostname;
+  public MingleStateRepository getStateRepository() {
+    return stateRepository;
   }
 
-  public void setHostname(String hostname) {
-    this.hostname = hostname;
-  }
-
-  public int getPort() {
-    return port;
-  }
-
-  public void setPort(int port) {
-    this.port = port;
+  public void setStateRepository(MingleStateRepository stateRepository) {
+    this.stateRepository = stateRepository;
   }
 }

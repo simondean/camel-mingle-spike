@@ -22,7 +22,10 @@ public class MingleRouteTest extends CamelTestSupport {
     return new RouteBuilder() {
       @Override
       public void configure() throws Exception {
-        from("mingle:localhost:443")
+        String host = System.getenv("MINGLE_HOST");
+        String port = System.getenv("MINGLE_PORT");
+        String projects = System.getenv("MINGLE_PROJECTS");
+        from("mingle:" + host + ":" + port + "?projects=" + projects)
           .to("mock:result");
       }
     };
