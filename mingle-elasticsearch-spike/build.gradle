@@ -1,0 +1,9 @@
+apply plugin: 'application'
+
+dependencies {
+  compile "org.apache.httpcomponents:httpclient:$httpClientVersion"
+  testCompile "junit:junit:$junitVersion",
+    "org.assertj:assertj-core:$jassertVersion"
+}
+
+mainClassName = "org.simondean.spikes.mingleelasticsearch.Main"

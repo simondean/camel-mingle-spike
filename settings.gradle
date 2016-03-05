@@ -1,1 +1,1 @@
-include "camel-mingle", "camel-mingle-example"
+include "camel-mingle", "camel-mingle-example", "mingle-elasticsearch-spike"
