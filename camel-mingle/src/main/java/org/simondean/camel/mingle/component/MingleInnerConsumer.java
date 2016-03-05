@@ -14,7 +14,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 
 public class MingleInnerConsumer implements Runnable {
-  private static final String defaultCharset = "UTF-8";
+  private static final String utf8Charset = "UTF-8";
   private final MingleConsumer consumer;
   private final MingleEndpoint endpoint;
   private final MingleStateRepository stateRepository;
@@ -37,7 +37,7 @@ public class MingleInnerConsumer implements Runnable {
 
         try (CloseableHttpResponse response = httpClient.execute(httpGet)) {
           HttpEntity entity = response.getEntity();
-          String body = EntityUtils.toString(entity, defaultCharset);
+          String body = EntityUtils.toString(entity, utf8Charset);
         }
 
         exchange.getIn().setBody("Hello, World!");
@@ -55,7 +55,7 @@ public class MingleInnerConsumer implements Runnable {
       lastFeedURL = new URI(new StringBuilder()
         .append("/api/v2/projects/")
         .append(project)
-        .append("/feeds/events.xml")
+        .append("/feeds/events.xml?page=1")
         .toString());
     }
 
