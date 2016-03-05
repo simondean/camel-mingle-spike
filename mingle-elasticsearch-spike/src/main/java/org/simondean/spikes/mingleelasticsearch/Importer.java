@@ -42,13 +42,8 @@ public class Importer {
       System.out.println(pageUri);
       Document document = parseXml(getAtomFeedXml(httpClient, httpHost, pageUri));
       Element feed = document.getRootElement();
-      Namespace atomNamespace = feed.getNamespace();
-
-      getReverseStream(getEntries(feed, atomNamespace)).forEach(entry -> {
-        processEntry(entry, atomNamespace);
-      });
-
-      Optional<Element> previousLink = getPreviousLink(getLinks(feed, atomNamespace), atomNamespace);
+      FeedProcessor feedProcessor = new FeedProcessor(feed);
+      Optional<Element> previousLink = feedProcessor.process();
 
       if (previousLink.isPresent()) {
         pageUri = new URI(getLinkHref(previousLink));
@@ -77,28 +72,6 @@ public class Importer {
       body = EntityUtils.toString(entity, utf8Charset);
     }
     return body;
-  }
-
-  private Optional<Element> getPreviousLink(List<Element> links, Namespace atomNamespace) {
-    return links.stream()
-      .filter(link -> "previous".equals(link.getAttributeValue("rel")))
-      .findFirst();
-  }
-
-  private List<Element> getLinks(Element feed, Namespace atomNamespace) {
-    return feed.getChildren("link", atomNamespace);
-  }
-
-  private void processEntry(Element entry, Namespace atomNamespace) {
-    System.out.println(entry.getChild("id", atomNamespace).getValue());
-  }
-
-  private Stream<Element> getReverseStream(List<Element> list) {
-    return Lists.reverse(list).stream();
-  }
-
-  private List<Element> getEntries(Element feed, Namespace atomNamespace) {
-    return feed.getChildren("entry", atomNamespace);
   }
 
   private CredentialsProvider createCredentialsProvider(HttpHost httpHost, String username, String password) {
