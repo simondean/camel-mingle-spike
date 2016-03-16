@@ -1,9 +1,13 @@
 package org.simondean.spikes.mingleelasticsearch;
 
+import java.io.IOException;
+
 public interface Repository {
-  Card getCard(int number);
+  void init() throws IOException;
 
-  void insertCard(Card card);
+  Card getCard(String projectName, int cardNumber) throws IOException;
 
-  void updateCard(Card card);
+  void upsertCard(Card card) throws IOException;
+
+  void insertCardEvent(int eventId, Card card) throws IOException;
 }

@@ -20,6 +20,8 @@ subprojects {
         httpClientVersion = '4.5.2'
         jdomVersion = '2.0.6'
         guavaVersion = '19.0'
+        elasticsearchVersion = '2.2.0'
+        jacksonVersion = '2.7.2'
     }
 
     jar {

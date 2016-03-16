@@ -3,7 +3,10 @@ apply plugin: 'application'
 dependencies {
   compile "org.apache.httpcomponents:httpclient:$httpClientVersion",
     "org.jdom:jdom2:$jdomVersion",
-    "com.google.guava:guava:$guavaVersion"
+    "com.google.guava:guava:$guavaVersion",
+    "org.elasticsearch:elasticsearch:$elasticsearchVersion",
+    "com.fasterxml.jackson.core:jackson-databind:$jacksonVersion",
+    "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jacksonVersion"
   testCompile "junit:junit:$junitVersion",
     "org.assertj:assertj-core:$jassertVersion"
 }

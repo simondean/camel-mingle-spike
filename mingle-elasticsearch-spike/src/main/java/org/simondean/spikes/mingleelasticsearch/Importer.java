@@ -25,17 +25,18 @@ import java.util.Optional;
 public class Importer {
   private static final String utf8Charset = "UTF-8";
 
-  public void run(String scheme, String host, int port, String username, String password, String projectName) throws Exception {
+  public void run(String scheme, String host, int port, String username, String password, String projectName, String elasticsearchClusterName) throws Exception {
     HttpHost httpHost = new HttpHost(host, port, scheme);
     CloseableHttpClient httpClient = createHttpClient(username, password, httpHost);
     Optional<URI> pageUri = Optional.of(generateFirstPageUri(projectName));
-    Repository observer = new ElasticsearchRepository();
+    Repository repository = new ElasticsearchRepository(elasticsearchClusterName);
+    repository.init();
 
     while (pageUri.isPresent()) {
       System.out.println(pageUri);
       Document document = parseXml(getAtomFeedXml(httpClient, httpHost, pageUri.get()));
       Element feed = document.getRootElement();
-      AtomFeedProcessor feedProcessor = new AtomFeedProcessor(feed, observer);
+      AtomFeedProcessor feedProcessor = new AtomFeedProcessor(projectName, feed, repository);
       pageUri = feedProcessor.process();
     }
   }

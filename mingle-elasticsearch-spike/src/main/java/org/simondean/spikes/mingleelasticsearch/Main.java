@@ -4,7 +4,7 @@ public class Main {
   public static void main(String[] args) {
     Importer importer = new Importer();
     try {
-      importer.run("https", getHost(), 443, getUsername(), getPassword(), getProjectName());
+      importer.run("https", getHost(), 443, getUsername(), getPassword(), getProjectName(), getElasticsearchClusterName());
     } catch (Exception e) {
       e.printStackTrace();
     }
@@ -28,6 +28,10 @@ public class Main {
 
   public static String getProjectName() {
     return System.getenv("MINGLE_PROJECT_NAME");
+  }
+
+  public static String getElasticsearchClusterName() {
+    return System.getenv("ELASTICSEARCH_CLUSTER_NAME");
   }
 
 }
