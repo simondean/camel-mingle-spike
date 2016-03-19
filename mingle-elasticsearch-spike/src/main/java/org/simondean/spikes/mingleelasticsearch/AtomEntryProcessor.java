@@ -48,7 +48,12 @@ public class AtomEntryProcessor extends BaseAtomProcessor {
       card.setNumber(cardNumber);
     }
 
-    card.setTimestamp(updatedInstant);
+    int eventId = getEventId(entry.getChildText("id", getAtomNamespace()));
+
+    CardEvent cardEvent = new CardEvent();
+    cardEvent.setEventId(eventId);
+    cardEvent.setCard(card);
+    cardEvent.setTimestamp(updatedInstant);
 
     Element changesParent = entry.getChild("content", getAtomNamespace()).getChild("changes", mingleNamespace);
     List<Element> changes = changesParent.getChildren("change", mingleNamespace);
@@ -71,19 +76,23 @@ public class AtomEntryProcessor extends BaseAtomProcessor {
 //
 //      if (cardProperty == null) {
 //        cardProperty = new CardProperty();
-//        cardProperty.setName(propertyName);
+//        cardProperty.setNewValue(propertyName);
 //        card.getProperties().put(propertyName, cardProperty);
 //      }
 //
 //      // TODO: Handle data types rather than treating everything as a string
-//      cardProperty.setValue(propertyValue);
+//      cardProperty.setOldValue(propertyValue);
 
+      PropertyChange propertyChange2 = new PropertyChange();
+      propertyChange2.setOldValue(card.getProperties().get(propertyName));
+      propertyChange2.setNewValue(propertyValue);
+      propertyChange2.setChanged(true);
+      cardEvent.getPropertyChanges().put(propertyName, propertyChange2);
       card.getProperties().put(propertyName, propertyValue);
     }
 
-    int eventId = getEventId(entry.getChildText("id", getAtomNamespace()));
     repository.upsertCard(card);
-    repository.insertCardEvent(eventId, card);
+    repository.insertCardEvent(cardEvent);
   }
 
   private Optional<Element> findChangeForChangeType(List<Element> changes, String type) {

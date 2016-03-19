@@ -2,14 +2,12 @@ package org.simondean.spikes.mingleelasticsearch;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 
 public class Card {
   private String projectName;
   private int number;
-  private Instant timestamp;
   private String name;
   private Map<String, Object> properties = new HashMap<>();
 
@@ -32,15 +30,6 @@ public class Card {
     this.number = number;
   }
 
-  @JsonProperty("@timestamp")
-  public Instant getTimestamp() {
-    return timestamp;
-  }
-
-  public void setTimestamp(Instant timestamp) {
-    this.timestamp = timestamp;
-  }
-
   public String getName() {
     return name;
   }
@@ -49,6 +38,7 @@ public class Card {
     this.name = name;
   }
 
+//  @JsonProperty("other")
   public Map<String, Object> getProperties() {
     return properties;
   }

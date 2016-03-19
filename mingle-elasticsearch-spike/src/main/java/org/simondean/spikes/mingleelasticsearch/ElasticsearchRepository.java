@@ -26,7 +26,8 @@ public class ElasticsearchRepository implements Repository, Closeable {
   public static final String MINGLE_EVENTS_INDEX_PREFIX = "mingle-events-";
   public static final String CARD_TYPE = "card";
   public static final DateTimeFormatter timeBasedIndexDateFormatter = DateTimeFormatter.ofPattern("yyyy.MM.dd");
-//  private final Node node;
+  public static final String MINGLE_EVENTS_TEMPLATE = "mingle-events";
+  //  private final Node node;
   private final Client client;
   private final ObjectMapper mapper;
 
@@ -49,41 +50,112 @@ public class ElasticsearchRepository implements Repository, Closeable {
 
   @Override
   public void init() throws IOException {
-    if (!indexExists(MINGLE_INDEX)) {
-      client.admin().indices().prepareCreate(MINGLE_INDEX)
-        .addMapping(CARD_TYPE, createCardMapping())
-        .get();
-    }
-//    client.admin().indices().preparePutTemplate("mingle")
-//      .setTemplate("mingle")
-//      .setSettings(Settings.builder()
-//        .put("number_of_shards", 1))
-//      .addMapping(CARD_TYPE, createCardMapping())
+//    client.admin().indices().prepareDeleteTemplate(MINGLE_INDEX)
 //      .get();
 
-    client.admin().indices().preparePutTemplate("mingle-events")
+    client.admin().indices().prepareDeleteTemplate(MINGLE_EVENTS_TEMPLATE)
+      .get();
+
+    client.admin().indices().prepareGetTemplates("*").get().getIndexTemplates().forEach(template -> {
+      System.out.println(template.getName());
+    });
+
+    if (indexExists(MINGLE_INDEX)) {
+      client.admin().indices().prepareDelete(MINGLE_INDEX)
+        .get();
+    }
+
+    client.admin().indices().prepareDelete(MINGLE_EVENTS_INDEX_PREFIX + "*")
+      .get();
+
+    client.admin().indices().prepareCreate(MINGLE_INDEX)
+//      .addMapping(CARD_TYPE, createCardMapping())
+      .get();
+
+    System.out.println(createCardEventMapping().string());
+
+    client.admin().indices().preparePutTemplate(MINGLE_EVENTS_TEMPLATE)
+      .setCreate(true)
       .setTemplate("mingle-events-*")
-      .setSettings(Settings.builder()
-        .put("number_of_shards", 1))
-      .addMapping(CARD_TYPE, createCardMapping())
+//      .setSettings(Settings.builder()
+//        .put("number_of_shards", 1))
+      .addMapping(CARD_TYPE, createCardEventMapping())
       .get();
   }
 
-  private XContentBuilder createCardMapping() throws IOException {
+  private XContentBuilder createCardEventMapping() throws IOException {
     return XContentFactory.jsonBuilder()
-        .startObject()
+      .startObject()
+        .startObject(CARD_TYPE)
           .startObject("properties")
-            .startObject("number")
+            .startObject("eventId")
               .field("type", "integer")
             .endObject()
-            .startObject("time")
+            .startObject("@timestamp")
               .field("type", "date")
             .endObject()
-            .startObject("name")
-              .field("type", "string")
+            .startObject("card")
+              .field("type", "object")
+              .startObject("properties")
+                .startObject("number")
+                  .field("type", "integer")
+                .endObject()
+                .startObject("name")
+                  .field("type", "string")
+                  .field("index", "not_analyzed")
+                .endObject()
+                .startObject("properties")
+                  .field("type", "object")
+                .endObject()
+              .endObject()
             .endObject()
           .endObject()
-        .endObject();
+          .startArray("dynamic_templates")
+//            .startObject()
+//              .startObject("strings")
+//                .field("match_mapping_type", "string")
+//                .startObject("mapping")
+//                  .field("type", "string")
+//                  .field("index", "not_analyzed")
+//                .endObject()
+//              .endObject()
+//            .endObject()
+            .startObject()
+              .startObject("card")
+                .field("path_match", "card.*")
+                .startObject("mapping")
+                  .field("type", "string")
+                  .field("index", "not_analyzed")
+                .endObject()
+              .endObject()
+            .endObject()
+            .startObject()
+              .startObject("cardProperty")
+                .field("path_match", "card.properties.*")
+                .startObject("mapping")
+                  .field("index", "not_analyzed")
+                .endObject()
+              .endObject()
+            .endObject()
+            .startObject()
+              .startObject("changedPropertyNewValue")
+                .field("path_match", "propertyChanges.*.newValue")
+                .startObject("mapping")
+                  .field("index", "not_analyzed")
+                .endObject()
+              .endObject()
+            .endObject()
+            .startObject()
+              .startObject("changedPropertyOldValue")
+                .field("path_match", "propertyChanges.*.oldValue")
+                .startObject("mapping")
+                  .field("index", "not_analyzed")
+                .endObject()
+              .endObject()
+            .endObject()
+          .endArray()
+        .endObject()
+      .endObject();
   }
 
   @Override
@@ -103,15 +175,19 @@ public class ElasticsearchRepository implements Repository, Closeable {
   public void upsertCard(Card card) throws IOException {
     System.out.println("Upsert card " + card.getNumber());
 
+    System.out.println(mapper.writeValueAsString(card));
     client.prepareIndex(MINGLE_INDEX, CARD_TYPE, getDocumentId(card))
       .setSource(mapper.writeValueAsBytes(card))
       .get();
   }
 
   @Override
-  public void insertCardEvent(int eventId, Card card) throws IOException {
-    client.prepareIndex(getMingleEventIndex(card.getTimestamp()), CARD_TYPE, getEventDocumentId(eventId, card))
-      .setSource(mapper.writeValueAsBytes(card))
+  public void insertCardEvent(CardEvent cardEvent) throws IOException {
+    System.out.println("Insert card event " + cardEvent.getEventId());
+
+    System.out.println(mapper.writeValueAsString(cardEvent  ));
+    client.prepareIndex(getMingleEventIndex(cardEvent.getTimestamp()), CARD_TYPE, getEventDocumentId(cardEvent))
+      .setSource(mapper.writeValueAsBytes(cardEvent))
       .get();
   }
 
@@ -133,8 +209,8 @@ public class ElasticsearchRepository implements Repository, Closeable {
     return projectName + "-" + cardNumber;
   }
 
-  private String getEventDocumentId(int eventId, Card card) {
-    return getEventDocumentId(card.getProjectName(), eventId);
+  private String getEventDocumentId(CardEvent cardEvent) {
+    return getEventDocumentId(cardEvent.getCard().getProjectName(), cardEvent.getEventId());
   }
 
   private String getEventDocumentId(String projectName, int eventId) {

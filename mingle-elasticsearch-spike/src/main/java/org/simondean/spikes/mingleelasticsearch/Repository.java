@@ -9,5 +9,5 @@ public interface Repository {
 
   void upsertCard(Card card) throws IOException;
 
-  void insertCardEvent(int eventId, Card card) throws IOException;
+  void insertCardEvent(CardEvent cardEvent) throws IOException;
 }
