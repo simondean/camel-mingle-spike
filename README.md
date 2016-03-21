@@ -26,6 +26,12 @@ $ kibana --version
 4.4.2
 ```
 
+### Install Kopf
+
+``` shell
+"$(brew --prefix elasticsearch)/libexec/bin/plugin" install lmenezes/elasticsearch-kopf/2.0
+```
+
 ### Install Timelion
 
 ``` shell
