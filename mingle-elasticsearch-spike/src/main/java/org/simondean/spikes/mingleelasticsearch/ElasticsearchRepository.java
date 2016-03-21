@@ -20,6 +20,8 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
+import java.util.HashSet;
+import java.util.Set;
 
 public class ElasticsearchRepository implements Repository, Closeable {
   public static final String MINGLE_INDEX = "mingle";
@@ -53,12 +55,18 @@ public class ElasticsearchRepository implements Repository, Closeable {
 //    client.admin().indices().prepareDeleteTemplate(MINGLE_INDEX)
 //      .get();
 
-    client.admin().indices().prepareDeleteTemplate(MINGLE_EVENTS_TEMPLATE)
-      .get();
+    Set<String> templateNames = new HashSet<>();
 
     client.admin().indices().prepareGetTemplates("*").get().getIndexTemplates().forEach(template -> {
-      System.out.println(template.getName());
+      String templateName = template.getName();
+      System.out.println(templateName);
+      templateNames.add(templateName);
     });
+
+    if (templateNames.contains(MINGLE_EVENTS_TEMPLATE)) {
+      client.admin().indices().prepareDeleteTemplate(MINGLE_EVENTS_TEMPLATE)
+        .get();
+    }
 
     if (indexExists(MINGLE_INDEX)) {
       client.admin().indices().prepareDelete(MINGLE_INDEX)
